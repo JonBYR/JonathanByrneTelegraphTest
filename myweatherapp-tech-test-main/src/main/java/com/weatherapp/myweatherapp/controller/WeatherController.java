@@ -44,12 +44,8 @@ public class WeatherController {
         long hoursB = ChronoUnit.HOURS.between(cityBsunrise, cityBsunset);
         long minutesB = ChronoUnit.MINUTES.between(cityBsunrise, cityBsunrise);
         long secondsB = ChronoUnit.SECONDS.between(cityBsunrise, cityBsunset);
-        /* 
-        if((hoursA > 23 || hoursA < 0) || (hoursB > 23 || hoursB < 0)) return "Hour information is invalid for one/both cities";
-        if((minutesA > 59 || minutesA < 0) || (minutesB > 59 || minutesB < 0)) return "Minute information is invalid for one/both cities";
-        if((secondsA > 59 || secondsA < 0) || (secondsB > 59) || secondsB < 0) return "Seconds information is invalid for one/both cities";
-        //if/else checks 
-        */
+        if((hoursA < 0 || hoursB < 0) || (minutesA < 0 || minutesB < 0) || (secondsA < 0 || secondsB < 0)) return "One or two sunset(s) is/are preceeding sunrise!";
+        //if sunset time is less than sunrise time, the value returned will be less than 0, which would be erroneus, so return error message
         if(hoursA != hoursB) //check hours first, as if one city has less hours, this means that it would automatically have a shorter day
         {
           if(hoursA > hoursB) return firstCity;

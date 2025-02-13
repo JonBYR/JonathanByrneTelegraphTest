@@ -24,7 +24,7 @@ class WeatherServiceTest {
   WeatherService weatherService; //create a mock RESTful API service for testing
   // TODO: 12/05/2023 write unit tests
   @Test
-  void GetForecast() throws Exception //throws Exception required
+  void GetForecastTest() throws Exception //throws Exception required
   {
     mock.perform(get("/forecast/London")).andExpect(status().isOk()); //this test will simulate a HTTP request to fetch forecast data
   }
@@ -123,7 +123,7 @@ class WeatherServiceTest {
     assertEquals("CityA", Controller.compareDayLight("CityA", "CityB", weatherService));
   }
   @Test
-  void SameDaylight() { //check null is returned if both cities are the exact same
+  void SameDaylightTest() { //check null is returned if both cities are the exact same
     CityInfo cityA = new CityInfo(); 
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "06:00:00";
@@ -138,7 +138,7 @@ class WeatherServiceTest {
     assertNull(Controller.compareDayLight("CityA", "CityB", weatherService));
   }
   @Test
-  void BothCitiesAreRaining() { //check the other method and see if both cities are raining
+  void BothCitiesAreRainingTest() { //check the other method and see if both cities are raining
     CityInfo cityA = new CityInfo();
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.conditions = "rain";
@@ -151,7 +151,7 @@ class WeatherServiceTest {
     assertEquals("Both cities are raining", Controller.checkRaining("CityA", "CityB", weatherService));
   }
   @Test
-  void BothCitiesAreRainingUpper() { //check that the same result is used regardless of case
+  void BothCitiesAreRainingUpperTest() { //check that the same result is used regardless of case
     CityInfo cityA = new CityInfo();
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.conditions = "RAIN";
@@ -164,7 +164,7 @@ class WeatherServiceTest {
     assertEquals("Both cities are raining", Controller.checkRaining("CityA", "CityB", weatherService));
   }
   @Test
-  void FirstCityIsRaining() { 
+  void FirstCityIsRainingTest() { 
     CityInfo cityA = new CityInfo();
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.conditions = "RAIN"; //check if the first city is raining, that the test returns the first city
@@ -177,7 +177,7 @@ class WeatherServiceTest {
     assertEquals("CityA", Controller.checkRaining("CityA", "CityB", weatherService));
   }
   @Test
-  void SecondCityIsRaining() { 
+  void SecondCityIsRainingTest() { 
     CityInfo cityA = new CityInfo();
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.conditions = "Cloudy"; 
@@ -190,7 +190,7 @@ class WeatherServiceTest {
     assertEquals("CityB", Controller.checkRaining("CityA", "CityB", weatherService));
   }
   @Test
-  void NoCitiesAreRaining() { //check if the null condition is picked up if neither city contains rain
+  void NoCitiesAreRainingTest() { //check if the null condition is picked up if neither city contains rain
     CityInfo cityA = new CityInfo();
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.conditions = "Cloudy"; 
@@ -203,7 +203,7 @@ class WeatherServiceTest {
     assertNull(Controller.checkRaining("CityA", "CityB", weatherService));
   }
   @Test
-  void CompareNullException() { //test that null pointer exception is thrown when CityA or CityB is null
+  void CompareNullExceptionTest() { //test that null pointer exception is thrown when CityA or CityB is null
     CityInfo cityA = new CityInfo();
     CityInfo cityB = new CityInfo(); //create null objects for the Mock API
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
@@ -214,7 +214,7 @@ class WeatherServiceTest {
     //assertThrows statement will throw NullPointerException as cityA/cityB are null
   }
   @Test
-  void NullWeatherService() {
+  void NullWeatherServiceTest() {
     CityInfo cityA = new CityInfo(); 
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "06:00:00";
@@ -230,7 +230,7 @@ class WeatherServiceTest {
     //ensure that the NullPointerException is thrown if there is no WeatherService API call
   }
   @Test
-  void NullRain() {
+  void NullRainTest() {
     CityInfo cityA = new CityInfo();
     CityInfo cityB = new CityInfo(); //create null objects for the Mock API
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
@@ -240,7 +240,7 @@ class WeatherServiceTest {
     //check that a NullPointerExcpetion is also thrown in the checkRaining function for null CityInfo objects
   }
   @Test
-  void NullWeatherServiceRain() {
+  void NullWeatherServiceRainTest() {
     CityInfo cityA = new CityInfo();
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.conditions = "RAIN"; 
@@ -254,7 +254,7 @@ class WeatherServiceTest {
     //check that a NullPointerExcpetion is also thrown in the checkRaining function for a null weather service as well
   }
   @Test
-  void InvalidDateTimeThrown() {
+  void InvalidDateTimeThrownTest() {
     CityInfo cityA = new CityInfo(); 
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "06:00:00";
@@ -270,7 +270,7 @@ class WeatherServiceTest {
     //rather than an exception being thrown, the DateTimeParseException is instead caught, and the message shown above would be returned instead
   }
   @Test
-  void InvalidDateTimeFormat() {
+  void InvalidDateTimeFormatTest() {
     CityInfo cityA = new CityInfo(); 
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "0600:00"; //borderline case where colon is missed, to check that the same error is returned as the test above
@@ -285,11 +285,11 @@ class WeatherServiceTest {
     assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
   }
   @Test
-  void IncorrectHourAbove() {
+  void IncorrectHourAboveTest() {
     CityInfo cityA = new CityInfo(); 
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "06:00:00";
-    cityA.currentConditions.sunset = "25:30:00";
+    cityA.currentConditions.sunset = "24:00:00"; //hour cannot exceed 24, therefore if this borderline case passes, the test is true for any number above 24
     CityInfo cityB = new CityInfo();
     cityB.currentConditions = new CurrentConditions();
     cityB.currentConditions.sunrise = "06:00:00";
@@ -301,7 +301,7 @@ class WeatherServiceTest {
     //the exception is also caught for any conditions that are above the standard 24 hour date time
   }
   @Test
-  void IncorrectHourBelow() {
+  void IncorrectHourBelowTest() {
     CityInfo cityA = new CityInfo(); 
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "-1:00:00";
@@ -314,6 +314,131 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
     assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
-    //the exception is also caught for any conditions that are above the standard 24 hour date time
+    //the exception is also caught for any conditions that are below the standard 24 hour date time
+  }
+  @Test
+  void IncorrectMinuteAboveTest() {
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:00:00";
+    cityA.currentConditions.sunset = "06:60:00"; //borderline case
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    //checking the exception is thrown for invalid minutes
+  }
+  @Test
+  void IncorrectMinuteBelowTest() {
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:-1:00";
+    cityA.currentConditions.sunset = "06:59:00";
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+  }
+  @Test
+  void IncorrectSecondsAboveTest() {
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:00:00";
+    cityA.currentConditions.sunset = "06:00:60"; //borderline case
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    //checking the exception is thrown for invalid seconds
+  }
+  @Test
+  void IncorrectSecondsBelowTest() {
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:00:-1";
+    cityA.currentConditions.sunset = "06:59:00"; //borderline case
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+  }
+  @Test
+  void BorderlineTimeTest() {
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "00:00:00";
+    cityA.currentConditions.sunset = "23:59:59"; //checks that both borderline conditions of 00:00:00 and 23:59:59 do not thrown an exception
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("CityA", Controller.compareDayLight("CityA", "CityB", weatherService));
+  }
+  @Test 
+  void SunsetPreceedingSunriseHourTest() {
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:00:00";
+    cityA.currentConditions.sunset = "05:00:00"; //this should throw an error as a value of -1 is created in the method
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    //error string returned from function
+  }
+  @Test 
+  void SunsetPreceedingSunriseMinuteTest() { //repeat test for minute
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:30:00";
+    cityA.currentConditions.sunset = "06:29:00"; //borderline case, should cause a value of -1
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    //error string returned from function
+  }
+  @Test 
+  void SunsetPreceedingSunriseSecondsTest() { //repeat test for seconds
+    CityInfo cityA = new CityInfo(); 
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.sunrise = "06:00:59"; //borderline value so should be true for any larger negative values
+    cityA.currentConditions.sunset = "06:00:58"; //this should throw an error as a value of -1 is created in the method
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.sunrise = "06:00:00";
+    cityB.currentConditions.sunset = "18:30:00";
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    //error string returned from function
   }
 }

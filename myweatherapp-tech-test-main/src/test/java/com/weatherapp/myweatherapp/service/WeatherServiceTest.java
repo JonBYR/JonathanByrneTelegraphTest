@@ -16,13 +16,14 @@ import com.weatherapp.myweatherapp.controller.WeatherController;
 import com.weatherapp.myweatherapp.model.CityInfo;
 import com.weatherapp.myweatherapp.model.CityInfo.CurrentConditions; //in order to make a constructor for CurrentConditions, the class must also be included
 
-@WebMvcTest(WeatherController.class) //establishes the class that is being tested in the MVC framework
+@WebMvcTest(WeatherController.class) //establishes one instance of the WeatherController Class for testing
 class WeatherServiceTest {
-  @Autowired
-  MockMvc mock; //framework required to perform unit tests
-  @MockBean
-  WeatherService weatherService; //create a mock RESTful API service for testing
+  @Autowired //autowired keyword is used to inject the mock into the controller
+  MockMvc mock; //MockMvc is required for unit testing API data
+  @MockBean //annotation establishes that a mock of the weatherService is created
+  WeatherService weatherService; //mock the weatherService object. This is so that it's behaviour can be tested and verified 
   // TODO: 12/05/2023 write unit tests
+  /* Test to make sure that the MockAPI works as expected */
   @Test
   void GetForecastTest() throws Exception //throws Exception required
   {
@@ -30,8 +31,12 @@ class WeatherServiceTest {
   }
    
   @Test
+  /* 
+  First set of tests checks that the correct cities are returned based on various hour, minute and second information. A null check is also tested for when both cities
+  have the same amount of daylight 
+  */
   void HoursTest() { 
-    CityInfo cityA = new CityInfo(); //create mock CityInfo for the Mock API
+    CityInfo cityA = new CityInfo(); //create mock CityInfo for the Mock weatherService
     cityA.currentConditions = new CurrentConditions();
     cityA.currentConditions.sunrise = "06:00";
     cityA.currentConditions.sunset = "18:00";
@@ -41,11 +46,12 @@ class WeatherServiceTest {
     cityB.currentConditions.sunset = "19:00";
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB); 
-    //when will mock the forecastByCity method so that a CityInfo object is returned with the specified mock info 
+    //when specifies the behaviour of the mock object. This means that, when the weatherService API is called on a string, the relevant CityInfo object is returned.
+    //this ensures that the method returns the right result and verifies that the method works as expected
+    //as a result, the unit test to check the DayLightHoursComparison method can run, as the forecastByCity method used within the function will work correctly
     var Controller = new WeatherController(); //instance of API Controller is needed
-    assertEquals("CityB", Controller.compareDayLight("CityA", "CityB", weatherService));
-    //use these mock cities within the mock api and to check if the correct information is returned. If so, then this will mean that the same method
-    //can work for a real API call
+    assertEquals("CityB", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
+    //use these mock cities to check if the correct information is returned. If so, then this will mean that the same method can work for a real API call
   }
   @Test
   void HoursTestOtherCity() { //check that the first City is correctly picked when it has more hours
@@ -60,7 +66,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityA", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("CityA", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void MinutesTest() { //perform same method but check for minutes
@@ -75,7 +81,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityB", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("CityB", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void MinutesTestOtherCity() { //check that the first City is correctly picked when it has more minutes
@@ -90,7 +96,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityA", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("CityA", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void SecondsTest() { //perform same method but check for seconds
@@ -105,7 +111,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityB", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("CityB", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void SecondsTestOtherCity() { //check seconds works for the other city
@@ -120,7 +126,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityA", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("CityA", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void SameDaylightTest() { //check null is returned if both cities are the exact same
@@ -135,8 +141,12 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertNull(Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertNull(Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
+  /* 
+  Second set of tests check for if the correct string is returned when either one, or both cities are raining. A null check is also done for when
+  no cities are raining.
+   */
   @Test
   void BothCitiesAreRainingTest() { //check the other method and see if both cities are raining
     CityInfo cityA = new CityInfo();
@@ -148,7 +158,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("Both cities are raining", Controller.checkRaining("CityA", "CityB", weatherService));
+    assertEquals("Both cities are raining", Controller.RainCheck("CityA", "CityB", weatherService));
   }
   @Test
   void BothCitiesAreRainingUpperTest() { //check that the same result is used regardless of case
@@ -161,7 +171,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("Both cities are raining", Controller.checkRaining("CityA", "CityB", weatherService));
+    assertEquals("Both cities are raining", Controller.RainCheck("CityA", "CityB", weatherService));
   }
   @Test
   void FirstCityIsRainingTest() { 
@@ -174,7 +184,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityA", Controller.checkRaining("CityA", "CityB", weatherService));
+    assertEquals("CityA", Controller.RainCheck("CityA", "CityB", weatherService));
   }
   @Test
   void SecondCityIsRainingTest() { 
@@ -187,7 +197,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityB", Controller.checkRaining("CityA", "CityB", weatherService));
+    assertEquals("CityB", Controller.RainCheck("CityA", "CityB", weatherService));
   }
   @Test
   void NoCitiesAreRainingTest() { //check if the null condition is picked up if neither city contains rain
@@ -200,8 +210,11 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertNull(Controller.checkRaining("CityA", "CityB", weatherService));
+    assertNull(Controller.RainCheck("CityA", "CityB", weatherService));
   }
+  /* 
+  The third set of tests will check that if CityInfo or WeatherService is Null, both functions return a NullPointerException 
+  */
   @Test
   void CompareNullExceptionTest() { //test that null pointer exception is thrown when CityA or CityB is null
     CityInfo cityA = new CityInfo();
@@ -209,7 +222,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertThrows(NullPointerException.class, () -> {Controller.compareDayLight("CityA", "CityB", weatherService); });
+    assertThrows(NullPointerException.class, () -> {Controller.DayLightHoursComparison("CityA", "CityB", weatherService); });
     //assertThrows requires the exception class that is expected and a lambda statement for the code required to throw the exception
     //assertThrows statement will throw NullPointerException as cityA/cityB are null
   }
@@ -226,7 +239,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertThrows(NullPointerException.class, () -> {Controller.compareDayLight("CityA", "CityB", null); });
+    assertThrows(NullPointerException.class, () -> {Controller.DayLightHoursComparison("CityA", "CityB", null); });
     //ensure that the NullPointerException is thrown if there is no WeatherService API call
   }
   @Test
@@ -236,8 +249,8 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertThrows(NullPointerException.class, () -> {Controller.checkRaining("CityA", "CityB", weatherService); });
-    //check that a NullPointerExcpetion is also thrown in the checkRaining function for null CityInfo objects
+    assertThrows(NullPointerException.class, () -> {Controller.RainCheck("CityA", "CityB", weatherService); });
+    //check that a NullPointerExcpetion is also thrown in the RainCheck function for null CityInfo objects
   }
   @Test
   void NullWeatherServiceRainTest() {
@@ -250,9 +263,13 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertThrows(NullPointerException.class, () -> {Controller.checkRaining("CityA", "CityB", null); });
-    //check that a NullPointerExcpetion is also thrown in the checkRaining function for a null weather service as well
+    assertThrows(NullPointerException.class, () -> {Controller.RainCheck("CityA", "CityB", null); });
+    //check that a NullPointerExcpetion is also thrown in the RainCheck function for a null weather service as well
   }
+  /*
+  The fourth set of tests check that the correct error message is returned when the DateTimeParseException is caught, which occurs for invalid strings such as
+  a word given for the sunrise/sunset variable or borderline cases such as the time exceeding the hour, minute or seconds coloum.
+  */
   @Test
   void InvalidDateTimeThrownTest() {
     CityInfo cityA = new CityInfo(); 
@@ -266,7 +283,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //rather than an exception being thrown, the DateTimeParseException is instead caught, and the message shown above would be returned instead
   }
   @Test
@@ -282,7 +299,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void IncorrectHourAboveTest() {
@@ -297,7 +314,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //the exception is also caught for any conditions that are above the standard 24 hour date time
   }
   @Test
@@ -313,7 +330,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //the exception is also caught for any conditions that are below the standard 24 hour date time
   }
   @Test
@@ -329,7 +346,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //checking the exception is thrown for invalid minutes
   }
   @Test
@@ -345,7 +362,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
   @Test
   void IncorrectSecondsAboveTest() {
@@ -360,7 +377,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //checking the exception is thrown for invalid seconds
   }
   @Test
@@ -376,8 +393,11 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or more sunrise/sunset times are in invalid format!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
+  /* 
+  This test ensures that if a CityTime is at the very edge of being erroneus, but is still a valid time, that the error string is not returned
+  */
   @Test
   void BorderlineTimeTest() {
     CityInfo cityA = new CityInfo(); 
@@ -391,8 +411,12 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("CityA", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("CityA", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
   }
+  /*
+  The fifth set of tests ensure that the correct error string is returned if the sunset time preceeds the sunrise time, as this would effectively mean
+  that the hours of daylight are negative, which is an erroneous value.
+  */
   @Test 
   void SunsetPreceedingSunriseHourTest() {
     CityInfo cityA = new CityInfo(); 
@@ -406,7 +430,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //error string returned from function
   }
   @Test 
@@ -422,7 +446,7 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //error string returned from function
   }
   @Test 
@@ -438,7 +462,90 @@ class WeatherServiceTest {
     when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
     when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
     var Controller = new WeatherController();
-    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.compareDayLight("CityA", "CityB", weatherService));
+    assertEquals("One or two sunset(s) is/are preceeding sunrise!", Controller.DayLightHoursComparison("CityA", "CityB", weatherService));
     //error string returned from function
+  }
+  /*
+  The sixth and final set of tests ensure that null is returned when one or both cities have a chance or no chance of rain.
+  Tests are also done for when one city does contain rain, while the other city has no chance or chance of rain, as this should return
+  the city with rain.
+  */
+  @Test
+  void BothCitiesHaveAChanceOfRainTest() { //check null is returned if both cities have a chance of rain
+    CityInfo cityA = new CityInfo();
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.conditions = "Chance of Rain"; 
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.conditions = "Chance of Rain"; 
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertNull(Controller.RainCheck("CityA", "CityB", weatherService));
+  }
+  @Test
+  void OneCityHasAChanceOfRainTest() { //check that if one city has a chance of rain forecast and the other city does not mention rain, that null is returned
+    CityInfo cityA = new CityInfo();
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.conditions = "Chance of Rain"; 
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.conditions = "Cloudy"; 
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertNull(Controller.RainCheck("CityA", "CityB", weatherService));
+  }
+  @Test
+  void BothCitiesHaveNoRainTest() { //check both cities are forecast to have no rain and thus returns null
+    CityInfo cityA = new CityInfo();
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.conditions = "No Rain"; 
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.conditions = "No Rain"; 
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertNull(Controller.RainCheck("CityA", "CityB", weatherService));
+  }
+  @Test
+  void OneCityHasNoRainTest() { //check that if one city has no rain forecast and the other city does not mention rain, that null is returned
+    CityInfo cityA = new CityInfo();
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.conditions = "No Rain"; 
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.conditions = "Cloudy"; 
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertNull(Controller.RainCheck("CityA", "CityB", weatherService));
+  }
+  @Test
+  void OneCityHasNoRainTheOtherRainTest() { //make sure that the city with rain is returned if the other has no rain
+    CityInfo cityA = new CityInfo();
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.conditions = "No Rain"; 
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.conditions = "Rain"; 
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("CityB", Controller.RainCheck("CityA", "CityB", weatherService));
+  }
+  @Test
+  void OneCityHasChanceOfRainTheOtherRainTest() { //make sure that the city with rain is returned if the other has a chance of rain
+    CityInfo cityA = new CityInfo();
+    cityA.currentConditions = new CurrentConditions();
+    cityA.currentConditions.conditions = "Chance of Rain"; 
+    CityInfo cityB = new CityInfo();
+    cityB.currentConditions = new CurrentConditions();
+    cityB.currentConditions.conditions = "Rain"; 
+    when(weatherService.forecastByCity("CityA")).thenReturn(cityA);
+    when(weatherService.forecastByCity("CityB")).thenReturn(cityB);
+    var Controller = new WeatherController();
+    assertEquals("CityB", Controller.RainCheck("CityA", "CityB", weatherService));
   }
 }

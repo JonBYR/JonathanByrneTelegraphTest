@@ -16,7 +16,7 @@ public class CityInfo {
   public CurrentConditions currentConditions;
 
   @JsonProperty("days")
-  public List<Days> days;
+  List<Days> days;
 
   public static class CurrentConditions {
     public CurrentConditions() {

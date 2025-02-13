@@ -1,6 +1,7 @@
 package com.weatherapp.myweatherapp.controller;
 
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,44 +25,61 @@ public class WeatherController {
   }
   public String compareDayLight(String firstCity, String SecondCity, WeatherService w) 
   {
-    CityInfo cityA = w.forecastByCity(firstCity); //this should first call the API to retrieve the information required for each city, then store this information in a CityInfo
+      CityInfo cityA = w.forecastByCity(firstCity); //this should first call the API to retrieve the information required for each city, then store this information in a CityInfo
     //object
-    CityInfo cityB = w.forecastByCity(SecondCity);
-    LocalTime cityAsunrise = LocalTime.parse(cityA.currentConditions.sunrise); //CityInfo currentConditions class converted to public for access
-    //unsure on why information is not public after being deserialised from JSON
-    LocalTime cityAsunset = LocalTime.parse(cityA.currentConditions.sunset);
-    LocalTime cityBsunrise = LocalTime.parse(cityB.currentConditions.sunrise);
-    LocalTime cityBsunset = LocalTime.parse(cityB.currentConditions.sunset); //ensure that the times for sunset and sunrise for both cities are converted to
-    //LocalTime objects
-    long hoursA = ChronoUnit.HOURS.between(cityAsunrise, cityAsunset);
-    long minutesA = ChronoUnit.MINUTES.between(cityAsunrise, cityAsunrise);
-    long secondsA = ChronoUnit.SECONDS.between(cityAsunrise, cityAsunset); //check time difference between sunrise and sunset for both cities
-    long hoursB = ChronoUnit.HOURS.between(cityBsunrise, cityBsunset);
-    long minutesB = ChronoUnit.MINUTES.between(cityBsunrise, cityBsunrise);
-    long secondsB = ChronoUnit.SECONDS.between(cityBsunrise, cityBsunset);
-    if(hoursA != hoursB) //check hours first, as if one city has less hours, this means that it would automatically have a shorter day
-    {
-      if(hoursA > hoursB) return firstCity;
-      else if(hoursB > hoursA) return SecondCity;
-    }
-    if (minutesA != minutesB) //check minutes next as the second largest unit of time
-    {
-      if(minutesA > minutesB) return firstCity;
-      else if(minutesB > minutesA) return SecondCity;
-    }
-    if(secondsA != secondsB) //check seconds if other two are exact
-    {
-      if(secondsA > secondsB) return firstCity;
-      else if(secondsB > secondsA) return SecondCity;
-    }
-    return null; //if both cities are the exact same return null
-    
+      CityInfo cityB = w.forecastByCity(SecondCity);
+      if (cityA == null || cityB == null || w == null) {
+        throw new NullPointerException("Either weather service or both cities are null");
+      }
+      try {
+        LocalTime cityAsunrise = LocalTime.parse(cityA.currentConditions.sunrise); //CityInfo currentConditions class converted to public for access
+        //unsure on why information is not public after being deserialised from JSON
+        LocalTime cityAsunset = LocalTime.parse(cityA.currentConditions.sunset);
+        LocalTime cityBsunrise = LocalTime.parse(cityB.currentConditions.sunrise);
+        LocalTime cityBsunset = LocalTime.parse(cityB.currentConditions.sunset); //ensure that the times for sunset and sunrise for both cities are converted to
+        //LocalTime objects
+        long hoursA = ChronoUnit.HOURS.between(cityAsunrise, cityAsunset);
+        long minutesA = ChronoUnit.MINUTES.between(cityAsunrise, cityAsunrise);
+        long secondsA = ChronoUnit.SECONDS.between(cityAsunrise, cityAsunset); //check time difference between sunrise and sunset for both cities
+        long hoursB = ChronoUnit.HOURS.between(cityBsunrise, cityBsunset);
+        long minutesB = ChronoUnit.MINUTES.between(cityBsunrise, cityBsunrise);
+        long secondsB = ChronoUnit.SECONDS.between(cityBsunrise, cityBsunset);
+        /* 
+        if((hoursA > 23 || hoursA < 0) || (hoursB > 23 || hoursB < 0)) return "Hour information is invalid for one/both cities";
+        if((minutesA > 59 || minutesA < 0) || (minutesB > 59 || minutesB < 0)) return "Minute information is invalid for one/both cities";
+        if((secondsA > 59 || secondsA < 0) || (secondsB > 59) || secondsB < 0) return "Seconds information is invalid for one/both cities";
+        //if/else checks 
+        */
+        if(hoursA != hoursB) //check hours first, as if one city has less hours, this means that it would automatically have a shorter day
+        {
+          if(hoursA > hoursB) return firstCity;
+          else if(hoursB > hoursA) return SecondCity;
+        }
+        if (minutesA != minutesB) //check minutes next as the second largest unit of time
+        {
+          if(minutesA > minutesB) return firstCity;
+          else if(minutesB > minutesA) return SecondCity;
+        }
+        if(secondsA != secondsB) //check seconds if other two are exact
+        {
+          if(secondsA > secondsB) return firstCity;
+          else if(secondsB > secondsA) return SecondCity;
+        }
+        return null; //if both cities are the exact same return null
+      } 
+      catch (DateTimeParseException e) { //should any one of the datetime.parse statements fail, catch this exception and return this statement
+        return "One or more sunrise/sunset times are in invalid format!";
+      }
+        
   }
   // TODO: given two city names, check which city its currently raining in
   public String checkRaining(String firstCity, String SecondCity, WeatherService w) 
   {
     CityInfo cityA = w.forecastByCity(firstCity);
     CityInfo cityB = w.forecastByCity(SecondCity);
+    if (cityA == null || cityB == null || w == null) {
+      throw new NullPointerException("Either weather service or both cities are null");
+    }
     String dayA = cityA.currentConditions.conditions.toLowerCase(); //get the conditions varaible from currentconditions class
     String dayB = cityB.currentConditions.conditions.toLowerCase(); //convert to lower case to ensure that the check for the rain string is found regardless of case
     boolean dayAisRaining = dayA.contains("rain");

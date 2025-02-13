@@ -19,6 +19,9 @@ public class CityInfo {
   public List<Days> days;
 
   public static class CurrentConditions {
+    public CurrentConditions() {
+
+    }
     @JsonProperty("temp")
     String currentTemperature;
 

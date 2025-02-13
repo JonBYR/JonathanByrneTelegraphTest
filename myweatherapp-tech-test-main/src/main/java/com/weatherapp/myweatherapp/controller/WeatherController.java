@@ -22,12 +22,11 @@ public class WeatherController {
     CityInfo ci = weatherService.forecastByCity(city);
     return ResponseEntity.ok(ci);
   }
-  public String compareDayLight(@PathVariable("firstCity") String firstCity, @PathVariable("SecondCity") String SecondCity) 
+  public String compareDayLight(String firstCity, String SecondCity, WeatherService w) 
   {
-    
-    CityInfo cityA = weatherService.forecastByCity(firstCity); //this should first call the API to retrieve the information required for each city, then store this information in a CityInfo
+    CityInfo cityA = w.forecastByCity(firstCity); //this should first call the API to retrieve the information required for each city, then store this information in a CityInfo
     //object
-    CityInfo cityB = weatherService.forecastByCity(SecondCity);
+    CityInfo cityB = w.forecastByCity(SecondCity);
     LocalTime cityAsunrise = LocalTime.parse(cityA.currentConditions.sunrise); //CityInfo currentConditions class converted to public for access
     //unsure on why information is not public after being deserialised from JSON
     LocalTime cityAsunset = LocalTime.parse(cityA.currentConditions.sunset);
@@ -40,33 +39,31 @@ public class WeatherController {
     long hoursB = ChronoUnit.HOURS.between(cityBsunrise, cityBsunset);
     long minutesB = ChronoUnit.MINUTES.between(cityBsunrise, cityBsunrise);
     long secondsB = ChronoUnit.SECONDS.between(cityBsunrise, cityBsunset);
-    if(hoursA != hoursB) //if in different time zones, check which city has the greater number of hours
+    if(hoursA != hoursB) //check hours first, as if one city has less hours, this means that it would automatically have a shorter day
     {
       if(hoursA > hoursB) return firstCity;
       else if(hoursB > hoursA) return SecondCity;
     }
-    if (minutesA != minutesB) //if in same time zone, check which has the longer amount of minutes, then seconds
+    if (minutesA != minutesB) //check minutes next as the second largest unit of time
     {
       if(minutesA > minutesB) return firstCity;
       else if(minutesB > minutesA) return SecondCity;
     }
-    if(secondsA != secondsB) 
+    if(secondsA != secondsB) //check seconds if other two are exact
     {
       if(secondsA > secondsB) return firstCity;
       else if(secondsB > secondsA) return SecondCity;
     }
-    return null; //if time zones are the exact same, return null
+    return null; //if both cities are the exact same return null
     
   }
   // TODO: given two city names, check which city its currently raining in
-  public String checkRaining(String firstCity, String SecondCity) 
+  public String checkRaining(String firstCity, String SecondCity, WeatherService w) 
   {
-    //ResponseEntity<CityInfo> firstCall = forecastByCity(firstCity);
-    CityInfo cityA = weatherService.forecastByCity(firstCity);
-    //ResponseEntity<CityInfo> secondCall = forecastByCity(firstCity);
-    CityInfo cityB = weatherService.forecastByCity(SecondCity);
-    String dayA = cityA.currentConditions.conditions; //get the conditions varaible from currentconditions class
-    String dayB = cityB.currentConditions.conditions; 
+    CityInfo cityA = w.forecastByCity(firstCity);
+    CityInfo cityB = w.forecastByCity(SecondCity);
+    String dayA = cityA.currentConditions.conditions.toLowerCase(); //get the conditions varaible from currentconditions class
+    String dayB = cityB.currentConditions.conditions.toLowerCase(); //convert to lower case to ensure that the check for the rain string is found regardless of case
     boolean dayAisRaining = dayA.contains("rain");
     boolean dayBisRaining = dayB.contains("rain"); //check if, in conditions, the word rain is mentioned, as this means it is raining
     if(dayAisRaining && dayBisRaining) {
